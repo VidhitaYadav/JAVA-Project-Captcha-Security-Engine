@@ -1,0 +1,139 @@
+package com.niet;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Random;
+
+@SuppressWarnings("unused")
+class CaptchaEngine {
+    private String captchaText;
+    public String generateCaptchaText(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder captcha = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            captcha.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        this.captchaText = captcha.toString();
+        return this.captchaText;
+    }
+    public boolean validateCaptcha(String userInput) {
+        return userInput != null && userInput.equals(this.captchaText);
+    }
+
+    public BufferedImage generateCaptchaImage(String text) {
+        int width = 200, height = 60;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+
+        // Draw colorful background
+        Random random = new Random();
+        Color backgroundColor = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+        g2d.setColor(backgroundColor);
+        g2d.fillRect(0, 0, width, height);
+
+        for (int i = 0; i < 10; i++) {
+            g2d.setColor(new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+            int x1 = random.nextInt(width);
+            int y1 = random.nextInt(height);
+            int x2 = random.nextInt(width);
+            int y2 = random.nextInt(height);
+            g2d.drawLine(x1, y1, x2, y2);
+        }
+
+        g2d.setFont(new Font("Arial", Font.BOLD, 32));
+        int x = 20;
+        for (char c : text.toCharArray()) {
+            g2d.setColor(new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+            g2d.drawString(String.valueOf(c), x, 40);
+            x += 25;
+        }
+
+        g2d.dispose();
+        return image;
+    }
+}
+@SuppressWarnings("serial")
+public class CaptchaApp extends JFrame{
+	 private CaptchaEngine captchaEngine;
+	    private JLabel captchaLabel;
+	    private JTextField userInputField;
+	    private JButton verifyButton, refreshButton;
+	    private String currentCaptcha;
+
+	    public CaptchaApp() {
+	    	setTitle("Colorful CAPTCHA Security Engine");
+	        setSize(450, 300);
+	        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        setLocationRelativeTo(null);
+	        setResizable(false);
+
+	        captchaEngine = new CaptchaEngine();
+	        JPanel captchaPanel = new JPanel();
+	        captchaLabel = new JLabel();
+	        refreshCaptcha();
+	        captchaPanel.add(captchaLabel);
+	        captchaPanel.setBackground(Color.LIGHT_GRAY);
+	        JPanel inputPanel = new JPanel();
+	        userInputField = new JTextField(10);
+	        verifyButton = new JButton("Verify");
+	        refreshButton = new JButton("Refresh");
+	        verifyButton.setFont(new Font("Arial", Font.BOLD, 16));
+	        verifyButton.setForeground(Color.WHITE);
+	        verifyButton.setBackground(Color.GREEN);
+	        refreshButton.setFont(new Font("Arial", Font.BOLD, 16));
+	        refreshButton.setForeground(Color.WHITE);
+	        refreshButton.setBackground(Color.BLUE);
+
+	        verifyButton.addActionListener(e -> validateCaptcha());
+	        refreshButton.addActionListener(e -> refreshCaptcha());
+
+	        inputPanel.add(new JLabel("Enter CAPTCHA:"));
+	        inputPanel.add(userInputField);
+	        inputPanel.add(verifyButton);
+	        inputPanel.add(refreshButton);
+	        inputPanel.setBackground(Color.PINK);
+
+	        add(captchaPanel, BorderLayout.CENTER);
+	        add(inputPanel, BorderLayout.SOUTH);
+	    }
+
+		private void refreshCaptcha() {
+	        currentCaptcha = captchaEngine.generateCaptchaText(6);
+	        BufferedImage captchaImage = captchaEngine.generateCaptchaImage(currentCaptcha);
+
+	        captchaLabel.setIcon(new ImageIcon(captchaImage));
+	    }
+
+	    private void validateCaptcha() {
+	        String userInput = userInputField.getText();
+	        if (captchaEngine.validateCaptcha(userInput)) {
+	            JOptionPane.showMessageDialog(this, "CAPTCHA Verified Successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+	        } else {
+	            JOptionPane.showMessageDialog(this, "Invalid CAPTCHA. Please Try Again.", "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+
+	    public static void main(String[] args) {
+	    	SwingUtilities.invokeLater(() -> {
+		        CaptchaApp app = new CaptchaApp();
+		        app.setVisible(true);
+		    });
+		}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+  
+     
